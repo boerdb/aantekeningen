@@ -132,6 +132,7 @@ export function NoteEditor({ noteId }: Props) {
 
       <FileOpenButtons
         noteId={note.id}
+        noteTitle={note.title}
         hasPdf={note.hasPdf}
         hasDocx={note.hasDocx}
       />

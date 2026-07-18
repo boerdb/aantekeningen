@@ -1,9 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { FileDown, FileText } from "lucide-react";
+import {
+  FileViewerModal,
+  type FileViewKind,
+} from "@/components/notes/FileViewerModal";
 
 type Props = {
   noteId: string;
+  noteTitle?: string;
   hasPdf: boolean;
   hasDocx: boolean;
   compact?: boolean;
@@ -11,10 +17,13 @@ type Props = {
 
 export function FileOpenButtons({
   noteId,
+  noteTitle,
   hasPdf,
   hasDocx,
   compact = false,
 }: Props) {
+  const [viewKind, setViewKind] = useState<FileViewKind | null>(null);
+
   const btn =
     "inline-flex items-center gap-1.5 rounded-lg font-medium transition-opacity hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none";
   const size = compact
@@ -22,25 +31,36 @@ export function FileOpenButtons({
     : "text-sm px-3 py-2";
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <a
-        href={hasPdf ? `/api/notes/${noteId}/files/pdf` : undefined}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${btn} ${size} bg-[var(--accent)] text-white ${!hasPdf ? "pointer-events-none opacity-40" : ""}`}
-        aria-disabled={!hasPdf}
-      >
-        <FileText className="w-4 h-4" />
-        Open PDF
-      </a>
-      <a
-        href={hasDocx ? `/api/notes/${noteId}/files/docx?download=1` : undefined}
-        className={`${btn} ${size} bg-[var(--panel-2)] text-[var(--foreground)] border border-[var(--border)] ${!hasDocx ? "pointer-events-none opacity-40" : ""}`}
-        aria-disabled={!hasDocx}
-      >
-        <FileDown className="w-4 h-4" />
-        Open Word
-      </a>
-    </div>
+    <>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={!hasPdf}
+          onClick={() => setViewKind("pdf")}
+          className={`${btn} ${size} bg-[var(--accent)] text-white`}
+        >
+          <FileText className="w-4 h-4" />
+          Open PDF
+        </button>
+        <button
+          type="button"
+          disabled={!hasDocx}
+          onClick={() => setViewKind("docx")}
+          className={`${btn} ${size} bg-[var(--panel-2)] text-[var(--foreground)] border border-[var(--border)]`}
+        >
+          <FileDown className="w-4 h-4" />
+          Open Word
+        </button>
+      </div>
+
+      {viewKind && (
+        <FileViewerModal
+          noteId={noteId}
+          kind={viewKind}
+          title={noteTitle}
+          onClose={() => setViewKind(null)}
+        />
+      )}
+    </>
   );
 }

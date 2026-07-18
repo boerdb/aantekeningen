@@ -165,6 +165,7 @@ export function NotesList() {
             <div className="mt-3 pt-3 border-t border-[var(--border)]">
               <FileOpenButtons
                 noteId={note.id}
+                noteTitle={note.title}
                 hasPdf={note.hasPdf}
                 hasDocx={note.hasDocx}
                 compact
