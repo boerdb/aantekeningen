@@ -19,10 +19,12 @@ def run(ssh: paramiko.SSHClient, cmd: str, timeout: int = 600) -> None:
     out = stdout.read().decode("utf-8", errors="replace")
     err = stderr.read().decode("utf-8", errors="replace")
     code = stdout.channel.recv_exit_status()
-    if out.strip():
-        print(out.rstrip())
+    text = out.rstrip()
+    if text:
+        sys.stdout.buffer.write((text + "\n").encode("utf-8", errors="replace"))
+        sys.stdout.flush()
     if code != 0:
-        print(err.rstrip(), file=sys.stderr)
+        sys.stderr.buffer.write((err.rstrip() + "\n").encode("utf-8", errors="replace"))
         raise RuntimeError(f"failed ({code}): {cmd}")
 
 
