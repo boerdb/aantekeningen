@@ -103,7 +103,13 @@ export function NoteEditor({ noteId }: Props) {
   };
 
   const remove = async () => {
-    if (!confirm("Deze aantekening en bestanden verwijderen?")) return;
+    if (
+      !confirm(
+        "Deze aantekening verwijderen?\n\nFoto, PDF en Word worden ook gewist.",
+      )
+    ) {
+      return;
+    }
     const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
     if (res.ok) router.push("/");
     else {

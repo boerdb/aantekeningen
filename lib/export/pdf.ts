@@ -25,18 +25,16 @@ export async function writePdfFile(options: {
       .fontSize(18)
       .font("Helvetica-Bold")
       .text(pdfSafeText(options.title), { align: "left" });
-    doc.moveDown(0.8);
-    doc.fontSize(11).font("Helvetica");
 
-    const body = pdfSafeText(
-      options.contentText.trim() ||
-        "(Geen tekst — voeg inhoud toe in de app.)",
-    );
-
-    doc.text(body, {
-      align: "left",
-      lineGap: 4,
-    });
+    const body = pdfSafeText(options.contentText.trim());
+    if (body) {
+      doc.moveDown(0.8);
+      doc.fontSize(11).font("Helvetica");
+      doc.text(body, {
+        align: "left",
+        lineGap: 4,
+      });
+    }
 
 
     doc.end();

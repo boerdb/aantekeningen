@@ -9,22 +9,10 @@ import {
 import fs from "fs/promises";
 
 function paragraphsFromText(text: string): Paragraph[] {
-  const lines = text.replace(/\r\n/g, "\n").split("\n");
-  if (lines.length === 0 || (lines.length === 1 && !lines[0])) {
-    return [
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "(Geen tekst — voeg inhoud toe in de app.)",
-            italics: true,
-            color: "666666",
-          }),
-        ],
-      }),
-    ];
-  }
+  const trimmed = text.replace(/\r\n/g, "\n").trim();
+  if (!trimmed) return [];
 
-  return lines.map(
+  return trimmed.split("\n").map(
     (line) =>
       new Paragraph({
         spacing: { after: 120 },

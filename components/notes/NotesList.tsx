@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Camera, Loader2, RefreshCw } from "lucide-react";
+import { Camera, Loader2, RefreshCw, Trash2 } from "lucide-react";
 import { FileOpenButtons } from "@/components/notes/FileOpenButtons";
 import type { NoteSummary } from "@/lib/types/client";
 
@@ -21,6 +21,7 @@ export function NotesList() {
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,6 +42,28 @@ export function NotesList() {
     void load();
   }, [load]);
 
+  const removeNote = async (id: string, title: string) => {
+    if (
+      !confirm(
+        `“${title}” verwijderen?\n\nFoto, PDF en Word van deze aantekening worden ook gewist.`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Verwijderen mislukt");
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verwijderen mislukt");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
@@ -49,7 +72,7 @@ export function NotesList() {
             Aantekeningen
           </h1>
           <p className="text-sm text-[var(--muted)] mt-1">
-            Foto → tekst → altijd openbaar als PDF of Word
+            Foto → tekst → PDF/Word. Test-items kun je met de prullenbak wissen.
           </p>
         </div>
         <button
@@ -73,9 +96,6 @@ export function NotesList() {
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 text-red-800 px-4 py-3 text-sm">
           {error}
-          <p className="mt-1 text-xs opacity-80">
-            Controleer DATABASE_URL en of je schema.sql hebt gedraaid.
-          </p>
         </div>
       )}
 
@@ -98,20 +118,36 @@ export function NotesList() {
             key={note.id}
             className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4"
           >
-            <Link href={`/notes/${note.id}`} className="block group">
-              <div className="flex items-start justify-between gap-2">
-                <h2 className="font-semibold text-[var(--foreground)] group-hover:text-[var(--accent)]">
-                  {note.title}
-                </h2>
-                <StatusPill status={note.status} />
-              </div>
-              <p className="text-sm text-[var(--muted)] mt-1 line-clamp-2">
-                {note.preview}
-              </p>
-              <p className="text-xs text-[var(--muted)] mt-2">
-                {formatDate(note.updatedAt)}
-              </p>
-            </Link>
+            <div className="flex items-start gap-2">
+              <Link href={`/notes/${note.id}`} className="block group flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="font-semibold text-[var(--foreground)] group-hover:text-[var(--accent)]">
+                    {note.title}
+                  </h2>
+                  <StatusPill status={note.status} />
+                </div>
+                <p className="text-sm text-[var(--muted)] mt-1 line-clamp-2">
+                  {note.preview}
+                </p>
+                <p className="text-xs text-[var(--muted)] mt-2">
+                  {formatDate(note.updatedAt)}
+                </p>
+              </Link>
+              <button
+                type="button"
+                disabled={deletingId === note.id}
+                onClick={() => void removeNote(note.id, note.title)}
+                className="flex-shrink-0 p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
+                aria-label={`Verwijder ${note.title}`}
+                title="Verwijderen"
+              >
+                {deletingId === note.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+              </button>
+            </div>
             <div className="mt-3 pt-3 border-t border-[var(--border)]">
               <FileOpenButtons
                 noteId={note.id}
