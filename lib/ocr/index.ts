@@ -3,26 +3,35 @@ import { enhanceChemistryText } from "@/lib/ocr/chemistry";
 import { googleVisionProvider } from "@/lib/ocr/providers/google-vision";
 import { manualProvider } from "@/lib/ocr/providers/manual";
 import { mathpixProvider } from "@/lib/ocr/providers/mathpix";
+import { tesseractProvider } from "@/lib/ocr/providers/tesseract";
 import type { OcrProvider, OcrProviderName, OcrResult } from "@/lib/ocr/types";
 
 const providers: Record<OcrProviderName, OcrProvider> = {
+  tesseract: tesseractProvider,
   manual: manualProvider,
   mathpix: mathpixProvider,
   google: googleVisionProvider,
 };
 
+const VALID: OcrProviderName[] = ["tesseract", "manual", "mathpix", "google"];
+
 export function resolveOcrProvider(name?: string | null): OcrProvider {
-  const preferred = (name || process.env.OCR_PROVIDER || "manual").toLowerCase();
-  if (preferred === "mathpix" || preferred === "google" || preferred === "manual") {
+  const preferred = (
+    name ||
+    process.env.OCR_PROVIDER ||
+    "tesseract"
+  ).toLowerCase() as OcrProviderName;
+
+  if (VALID.includes(preferred)) {
     const provider = providers[preferred];
-    if (preferred !== "manual" && !provider.isConfigured()) {
+    if (preferred !== "manual" && preferred !== "tesseract" && !provider.isConfigured()) {
       throw new Error(
         `OCR provider "${preferred}" is gekozen maar niet geconfigureerd. Zie docs/OCR.md`,
       );
     }
     return provider;
   }
-  return manualProvider;
+  return tesseractProvider;
 }
 
 export function getAvailableOcrProviders(): Array<{
@@ -31,7 +40,16 @@ export function getAvailableOcrProviders(): Array<{
   label: string;
 }> {
   return [
-    { name: "manual", configured: true, label: "Handmatig (gratis)" },
+    {
+      name: "tesseract",
+      configured: true,
+      label: "Tesseract — gratis OCR (standaard)",
+    },
+    {
+      name: "manual",
+      configured: true,
+      label: "Geen OCR — alleen zelf typen",
+    },
     {
       name: "mathpix",
       configured: mathpixProvider.isConfigured(),

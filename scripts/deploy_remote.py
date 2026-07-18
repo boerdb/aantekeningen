@@ -46,7 +46,7 @@ def run(
 
 def main() -> None:
     env_content = f"""DATABASE_URL=mysql://{DB_USER}:{DB_PASS}@{DB_HOST}:3306/{DB_NAME}
-OCR_PROVIDER=manual
+OCR_PROVIDER=tesseract
 NODE_ENV=production
 """
 

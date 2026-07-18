@@ -1,4 +1,4 @@
-export type OcrProviderName = "manual" | "mathpix" | "google";
+export type OcrProviderName = "tesseract" | "manual" | "mathpix" | "google";
 
 export type OcrResult = {
   provider: OcrProviderName;

@@ -7,6 +7,7 @@ import { runOcr } from "@/lib/ocr";
 import { absoluteFromRelative } from "@/lib/storage/paths";
 
 export const runtime = "nodejs";
+export const maxDuration = 120;
 
 type Params = { params: Promise<{ id: string }> };
 

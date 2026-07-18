@@ -15,7 +15,7 @@ export function NewNoteForm() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [provider, setProvider] = useState("manual");
+  const [provider, setProvider] = useState("tesseract");
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -98,7 +98,13 @@ export function NewNoteForm() {
         >
           {(providers.length
             ? providers
-            : [{ name: "manual", configured: true, label: "Handmatig (gratis)" }]
+            : [
+                {
+                  name: "tesseract",
+                  configured: true,
+                  label: "Tesseract — gratis OCR (standaard)",
+                },
+              ]
           ).map((p) => (
             <option key={p.name} value={p.name} disabled={!p.configured}>
               {p.label}
@@ -107,7 +113,9 @@ export function NewNoteForm() {
           ))}
         </select>
         <p className="text-xs text-[var(--muted)]">
-          Zie docs/OCR.md voor kosten. Zonder API-keys werkt &ldquo;Handmatig&rdquo;.
+          Standaard: gratis Tesseract (kan 10–30 sec duren). &ldquo;Geen OCR&rdquo;
+          typt niets — dat is expres. Handschrift blijft soms rommelig; corrigeer
+          daarna in de editor.
         </p>
       </label>
 
@@ -170,7 +178,7 @@ export function NewNoteForm() {
         {busy ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Verwerken…
+            OCR bezig… even geduld
           </>
         ) : (
           "Opslaan & omzetten"

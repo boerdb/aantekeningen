@@ -13,6 +13,7 @@ import {
 import fs from "fs/promises";
 
 export const runtime = "nodejs";
+export const maxDuration = 120;
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
@@ -71,10 +72,17 @@ export async function POST(req: NextRequest) {
       contentText = ocr.text;
       ocrRaw = ocr.raw ?? ocr.text;
       ocrProvider = ocr.provider;
+      if (ocr.provider === "manual") {
+        errorMessage =
+          "Geen OCR gekozen — typ hieronder zelf je aantekeningen.";
+      } else if (!contentText.trim()) {
+        errorMessage =
+          "OCR vond geen leesbare tekst. Probeer een scherpere foto of typ zelf.";
+      }
     } catch (err) {
       status = "error";
       errorMessage = err instanceof Error ? err.message : "OCR mislukt";
-      ocrProvider = provider || process.env.OCR_PROVIDER || "manual";
+      ocrProvider = provider || process.env.OCR_PROVIDER || "tesseract";
     }
 
     const { updateNote } = await import("@/lib/db/notes");

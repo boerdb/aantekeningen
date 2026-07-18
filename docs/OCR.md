@@ -6,7 +6,8 @@ De app ondersteunt meerdere OCR-backends. Je kiest er één via `OCR_PROVIDER` i
 
 | Provider | Kosten (indicatief) | Handschrift | Formules / chemie | Privacy |
 |----------|---------------------|-------------|-------------------|---------|
-| **manual** | Gratis | — | — | Alles blijft lokaal |
+| **tesseract** | Gratis (lokaal) | Matig | Zwak | Alles blijft op je server |
+| **manual** | Gratis | — (geen OCR) | — | Alles blijft lokaal |
 | **Mathpix** | ~$0,002 / foto (+ eenmalig setup) | Zeer goed | Beste keuze (LaTeX + SMILES) | Foto naar Mathpix |
 | **Google Vision** | Eerste 1000/maand gratis, daarna ~$1,50 / 1000 | Goed | Matig (geen echte molecuul-OCR) | Foto naar Google |
 
@@ -14,16 +15,28 @@ De app ondersteunt meerdere OCR-backends. Je kiest er één via `OCR_PROVIDER` i
 
 ---
 
-## 1. Handmatig (`manual`) — standaard
+## 1. Tesseract (`tesseract`) — standaard
 
-- Geen API-kosten.
-- Foto wordt opgeslagen; jij typt of plakt de tekst.
-- PDF en Word worden wél altijd gegenereerd en blijven openbaar vanuit de app.
-- Handig om te starten zonder accounts.
+- Gratis, draait op de Next-server (geen API-key).
+- Leest wél tekst uit de foto (kan 10–30 seconden duren).
+- Handschrift en chemische formules zijn vaak rommelig → altijd nakijken in de editor.
+- Voor serieuze scheikunde later: Mathpix.
+
+```env
+OCR_PROVIDER=tesseract
+```
 
 ---
 
-## 2. Mathpix Convert API — aanbevolen voor scheikunde
+## 2. Geen OCR (`manual`)
+
+- Doet expres **geen** tekstherkenning.
+- Alleen foto opslaan; jij typt zelf.
+- Gebruik dit niet als je OCR verwacht.
+
+---
+
+## 3. Mathpix Convert API — aanbevolen voor scheikunde
 
 **Waarom:** gemaakt voor STEM: handschrift, wiskunde/chemie, formules als LaTeX, moleculen optioneel als SMILES.
 
@@ -43,7 +56,7 @@ MATHPIX_APP_KEY=...
 
 ---
 
-## 3. Google Cloud Vision
+## 4. Google Cloud Vision
 
 **Waarom:** goedkoop om te beginnen, sterke document-OCR, minder gespecialiseerd in chemische structuren.
 
@@ -63,7 +76,7 @@ GOOGLE_VISION_API_KEY=...
 
 ## Advies voor jouw studie-gebruik
 
-1. Begin met **manual** om de app + PDF/Word-flow te testen (0 euro).
+1. Begin met **tesseract** (gratis, schrijft wél tekst; corrigeer altijd).
 2. Voor echte handschrift→formules: zet **Mathpix** aan — bij studie-volume blijven de kosten laag (centen tot enkele euro’s per maand).
 3. Google Vision is een goedkoop alternatief als je vooral lopende tekst wilt, niet complexe structuurformules.
 

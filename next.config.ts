@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["*"],
-  serverExternalPackages: ["pdfkit", "mysql2"],
+  serverExternalPackages: ["pdfkit", "mysql2", "tesseract.js"],
   headers: async () => [
     {
       source: "/sw.js",
