@@ -1,16 +1,16 @@
 # Scheikunde Aantekeningen (PWA)
 
-Lokaal gehoste Next.js-app: foto van handschrift → bewerkbare tekst → **altijd** PDF én Word openen vanaf het overzicht of de detailpagina.
+Lokaal gehoste Next.js-app: **foto opslaan → tekst typen of plakken** (bijv. uit Mathpix Snip) → PDF én Word met **foto + jouw tekst**.
 
 Zelfde database-aanpak als `med-track-pwa` / `dash-next-app`: **MySQL op 192.168.1.14** via `mysql2` + `DATABASE_URL`.
 
 ## Features
 
 - PWA (installeerbaar, service worker)
-- Foto via camera of galerij
-- OCR: handmatig / Mathpix / Google Vision (zie [docs/OCR.md](docs/OCR.md))
-- Lichte scheikunde-postprocessing (bijv. `H2SO4` → `H₂SO₄`)
-- Bij elke opslag: PDF + DOCX opnieuw wegschrijven onder `data/uploads/<id>/`
+- Foto via camera of galerij — direct opslaan, geen wachten op OCR
+- Editor: typ/plak tekst naast de foto; chemie-knoppen (H₂O, H₂SO₄, …)
+- Tip voor Mathpix Snip (gratis app) om handschrift/formules om te zetten
+- PDF + Word bevatten ingebedde foto + jouw tekst
 - Knoppen **Open PDF** en **Open Word** op lijst én detail
 
 ## Setup
@@ -29,8 +29,9 @@ Pas `DATABASE_URL` aan:
 
 ```env
 DATABASE_URL=mysql://aantekeningen:JOUW_WW@192.168.1.14:3306/aantekeningen
-OCR_PROVIDER=tesseract
 ```
+
+(OCR-API’s zijn optioneel; zie [docs/OCR.md](docs/OCR.md) — standaardflow gebruikt geen auto-OCR.)
 
 ### 3. Install & run
 

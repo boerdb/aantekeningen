@@ -4,7 +4,6 @@ import { jsonError, jsonOk } from "@/lib/api/http";
 import { isDatabaseConfigured } from "@/lib/db/mysql";
 import { createNote, listNotes } from "@/lib/db/notes";
 import { regenerateExports } from "@/lib/export/regenerate";
-import { runOcr } from "@/lib/ocr";
 import {
   ensureNoteDir,
   noteFilePath,
@@ -13,7 +12,6 @@ import {
 import fs from "fs/promises";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
@@ -37,7 +35,6 @@ export async function POST(req: NextRequest) {
     const form = await req.formData();
     const title =
       String(form.get("title") ?? "").trim() || "Nieuwe aantekening";
-    const provider = String(form.get("provider") ?? "").trim() || undefined;
     const file = form.get("photo");
 
     if (!(file instanceof File) || file.size === 0) {
@@ -58,43 +55,15 @@ export async function POST(req: NextRequest) {
       title,
       contentText: "",
       photoPath,
-      status: "processing",
+      status: "ready",
     });
 
-    let contentText = "";
-    let ocrRaw: string | null = null;
-    let ocrProvider: string | null = null;
-    let status: "ready" | "error" = "ready";
-    let errorMessage: string | null = null;
-
-    try {
-      const ocr = await runOcr(photoAbs, provider);
-      contentText = ocr.text;
-      ocrRaw = ocr.raw ?? ocr.text;
-      ocrProvider = ocr.provider;
-      if (ocr.provider === "manual") {
-        errorMessage =
-          "Geen OCR gekozen — typ hieronder zelf je aantekeningen.";
-      } else if (!contentText.trim()) {
-        errorMessage =
-          "OCR vond geen leesbare tekst. Probeer een scherpere foto of typ zelf.";
-      }
-    } catch (err) {
-      status = "error";
-      errorMessage = err instanceof Error ? err.message : "OCR mislukt";
-      ocrProvider = provider || process.env.OCR_PROVIDER || "tesseract";
-    }
-
-    const { updateNote } = await import("@/lib/db/notes");
-    await updateNote(id, {
-      contentText,
-      ocrRaw,
-      ocrProvider,
-      status: status === "error" && !contentText ? "error" : "ready",
-      errorMessage,
+    await regenerateExports({
+      noteId: id,
+      title,
+      contentText: "",
+      photoPath,
     });
-
-    await regenerateExports({ noteId: id, title, contentText });
 
     const note = await import("@/lib/db/notes").then((m) => m.getNote(id));
     return jsonOk({ note }, { status: 201 });

@@ -4,33 +4,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Camera, ImagePlus, Loader2 } from "lucide-react";
 
-type ProviderInfo = {
-  name: string;
-  configured: boolean;
-  label: string;
-};
-
 export function NewNoteForm() {
   const router = useRouter();
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [provider, setProvider] = useState("tesseract");
-  const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/ocr/providers")
-      .then((r) => r.json())
-      .then((data) => {
-        setProviders(data.providers ?? []);
-        if (data.active) setProvider(data.active);
-      })
-      .catch(() => null);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -56,7 +38,6 @@ export function NewNoteForm() {
     try {
       const form = new FormData();
       form.set("title", title || "Nieuwe aantekening");
-      form.set("provider", provider);
       form.set("photo", file);
       const res = await fetch("/api/notes", { method: "POST", body: form });
       const data = await res.json();
@@ -73,8 +54,8 @@ export function NewNoteForm() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Nieuwe foto</h1>
         <p className="text-sm text-[var(--muted)] mt-1">
-          Maak een scherpe foto van je aantekeningen. Daarna kun je de tekst
-          corrigeren; PDF en Word worden automatisch bijgehouden.
+          Foto wordt direct opgeslagen. Daarna typ of plak je je tekst in de
+          editor — PDF en Word krijgen foto + jouw tekst.
         </p>
       </div>
 
@@ -87,36 +68,6 @@ export function NewNoteForm() {
           placeholder="Bijv. Organische chemie — alkanen"
           className="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
         />
-      </label>
-
-      <label className="block space-y-1.5">
-        <span className="text-sm font-medium">OCR-provider</span>
-        <select
-          value={provider}
-          onChange={(e) => setProvider(e.target.value)}
-          className="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
-        >
-          {(providers.length
-            ? providers
-            : [
-                {
-                  name: "tesseract",
-                  configured: true,
-                  label: "Tesseract — gratis OCR (standaard)",
-                },
-              ]
-          ).map((p) => (
-            <option key={p.name} value={p.name} disabled={!p.configured}>
-              {p.label}
-              {!p.configured ? " — niet geconfigureerd" : ""}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-[var(--muted)]">
-          Standaard: gratis Tesseract (kan 10–30 sec duren). &ldquo;Geen OCR&rdquo;
-          typt niets — dat is expres. Handschrift blijft soms rommelig; corrigeer
-          daarna in de editor.
-        </p>
       </label>
 
       <div className="grid grid-cols-2 gap-3">
@@ -178,10 +129,10 @@ export function NewNoteForm() {
         {busy ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            OCR bezig… even geduld
+            Opslaan…
           </>
         ) : (
-          "Opslaan & omzetten"
+          "Opslaan & verder"
         )}
       </button>
     </div>

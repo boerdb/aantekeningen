@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { jsonError, jsonOk } from "@/lib/api/http";
 import { isDatabaseConfigured } from "@/lib/db/mysql";
-import { deleteNote, getNote, updateNote } from "@/lib/db/notes";
+import { deleteNote, getNote, getNoteRow, updateNote } from "@/lib/db/notes";
 import { regenerateExports } from "@/lib/export/regenerate";
 import { removeNoteDir } from "@/lib/storage/paths";
 
@@ -39,12 +39,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const existing = await getNote(id);
     if (!existing) return jsonError("Niet gevonden", 404);
 
+    const row = await getNoteRow(id);
     const title = body.title?.trim() || existing.title;
     const contentText =
       body.contentText !== undefined ? body.contentText : existing.contentText;
 
     await updateNote(id, { title, contentText, status: "ready", errorMessage: null });
-    await regenerateExports({ noteId: id, title, contentText });
+    await regenerateExports({
+      noteId: id,
+      title,
+      contentText,
+      photoPath: row?.photo_path ?? null,
+    });
 
     const note = await getNote(id);
     return jsonOk({ note });

@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowLeft,
-  Loader2,
-  RefreshCw,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Save, Trash2 } from "lucide-react";
+import { ChemistryToolbar } from "@/components/notes/ChemistryToolbar";
 import { FileOpenButtons } from "@/components/notes/FileOpenButtons";
 import type { NoteDetail } from "@/lib/types/client";
 
@@ -22,7 +17,6 @@ export function NoteEditor({ noteId }: Props) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [ocrBusy, setOcrBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
@@ -72,33 +66,11 @@ export function NoteEditor({ noteId }: Props) {
       setNote(data.note);
       setTitle(data.note.title);
       setContent(data.note.contentText);
-      setSavedMsg("Opgeslagen — PDF en Word bijgewerkt");
+      setSavedMsg("Opgeslagen — PDF en Word bijgewerkt (foto + tekst)");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Opslaan mislukt");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const rerunOcr = async () => {
-    setOcrBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/notes/${noteId}/ocr`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "OCR mislukt");
-      setNote(data.note);
-      setTitle(data.note.title);
-      setContent(data.note.contentText);
-      setSavedMsg("OCR opnieuw uitgevoerd — bestanden bijgewerkt");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "OCR mislukt");
-    } finally {
-      setOcrBusy(false);
     }
   };
 
@@ -169,9 +141,28 @@ export function NoteEditor({ noteId }: Props) {
         <img
           src={`/api/notes/${note.id}/files/photo`}
           alt="Originele foto"
-          className="w-full max-h-56 object-contain rounded-2xl border border-[var(--border)] bg-[var(--panel-2)]"
+          className="w-full max-h-72 object-contain rounded-2xl border border-[var(--border)] bg-[var(--panel-2)]"
         />
       )}
+
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel-2)] px-4 py-3 text-sm">
+        <p className="font-medium text-[var(--foreground)]">
+          Beter handschrift → tekst?
+        </p>
+        <p className="text-[var(--muted)] mt-1 text-xs leading-relaxed">
+          Gebruik de gratis{" "}
+          <a
+            href="https://mathpix.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--accent)] inline-flex items-center gap-0.5 underline"
+          >
+            Mathpix Snip
+            <ExternalLink className="w-3 h-3" />
+          </a>{" "}
+          app op je telefoon of pc, kopieer het resultaat en plak het hieronder.
+        </p>
+      </div>
 
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">Titel</span>
@@ -184,25 +175,19 @@ export function NoteEditor({ noteId }: Props) {
       </label>
 
       <label className="block space-y-1.5">
-        <span className="text-sm font-medium">Tekst (bewerkbaar)</span>
+        <span className="text-sm font-medium">Tekst</span>
+        <ChemistryToolbar content={content} onChange={setContent} />
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={14}
-          className="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-[var(--accent)]/40 font-mono"
-          placeholder="Typ of corrigeer hier je aantekeningen. Formules zoals H2SO4 worden na OCR vaak als H₂SO₄ getoond."
+          className="w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3 py-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-[var(--accent)]/40 font-mono mt-2"
+          placeholder="Typ je aantekeningen, of plak tekst uit Mathpix Snip. Formules: H2SO4 → knop Subscripten."
         />
       </label>
 
-      <div className="flex flex-wrap gap-2 text-xs text-[var(--muted)]">
-        {note.ocrProvider && <span>OCR: {note.ocrProvider}</span>}
-        {dirty && <span className="text-amber-700">Niet-opgeslagen wijzigingen</span>}
-      </div>
-
-      {note.errorMessage && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm">
-          {note.errorMessage}
-        </div>
+      {dirty && (
+        <p className="text-xs text-amber-700">Niet-opgeslagen wijzigingen</p>
       )}
 
       {error && (
@@ -217,34 +202,19 @@ export function NoteEditor({ noteId }: Props) {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <button
-          type="button"
-          disabled={saving || !dirty}
-          onClick={() => void save()}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-white py-3 font-medium disabled:opacity-50"
-        >
-          {saving ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Save className="w-5 h-5" />
-          )}
-          Opslaan & PDF/Word vernieuwen
-        </button>
-        <button
-          type="button"
-          disabled={ocrBusy || !note.hasPhoto}
-          onClick={() => void rerunOcr()}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel)] py-3 text-sm font-medium disabled:opacity-50"
-        >
-          {ocrBusy ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4" />
-          )}
-          OCR opnieuw uitvoeren
-        </button>
-      </div>
+      <button
+        type="button"
+        disabled={saving || !dirty}
+        onClick={() => void save()}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-white py-3 font-medium disabled:opacity-50"
+      >
+        {saving ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <Save className="w-5 h-5" />
+        )}
+        Opslaan & PDF/Word vernieuwen
+      </button>
     </div>
   );
 }
