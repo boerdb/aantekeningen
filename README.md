@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scheikunde Aantekeningen (PWA)
 
-## Getting Started
+Lokaal gehoste Next.js-app: foto van handschrift → bewerkbare tekst → **altijd** PDF én Word openen vanaf het overzicht of de detailpagina.
 
-First, run the development server:
+Zelfde database-aanpak als `med-track-pwa` / `dash-next-app`: **MySQL op 192.168.1.14** via `mysql2` + `DATABASE_URL`.
+
+## Features
+
+- PWA (installeerbaar, service worker)
+- Foto via camera of galerij
+- OCR: handmatig / Mathpix / Google Vision (zie [docs/OCR.md](docs/OCR.md))
+- Lichte scheikunde-postprocessing (bijv. `H2SO4` → `H₂SO₄`)
+- Bij elke opslag: PDF + DOCX opnieuw wegschrijven onder `data/uploads/<id>/`
+- Knoppen **Open PDF** en **Open Word** op lijst én detail
+
+## Setup
+
+### 1. Database
+
+Voer `sql/schema.sql` uit op de DB-server (phpMyAdmin), maak user `aantekeningen` met rechten op database `aantekeningen`.
+
+### 2. Env
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+copy .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Pas `DATABASE_URL` aan:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATABASE_URL=mysql://aantekeningen:JOUW_WW@192.168.1.14:3306/aantekeningen
+OCR_PROVIDER=manual
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Install & run
 
-## Learn More
+```bash
+npm install
+npm run icons:generate
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open `http://localhost:3000` (of het LAN-IP van de machine).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Productie (Next-server + PM2)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Zie [docs/DEPLOY.md](docs/DEPLOY.md). Kort:
 
-## Deploy on Vercel
+- Server: `192.168.1.32` → `/var/www/aantekeningen` → poort **3008**
+- MySQL: `192.168.1.14` → database `aantekeningen`
+- GitHub: `git@github.com:boerdb/aantekeningen.git` (`main`)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+python scripts/deploy_db.py          # schema + grants op .14
+python scripts/deploy_git_init.py    # clone + build + PM2 op .32
+# updates later:
+python scripts/deploy_pull.py
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bestanden (foto/PDF/Word) staan in `data/uploads/` op de Next-server — niet in MySQL.
+
+## OCR-kosten (kort)
+
+| Optie | Kosten |
+|-------|--------|
+| manual | Gratis |
+| Mathpix | ~$0,002/foto + setup |
+| Google Vision | 1000/maand gratis, daarna ~$1,50/1000 |
+
+Details: [docs/OCR.md](docs/OCR.md).

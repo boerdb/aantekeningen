@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+"""Update op server via git pull + build + PM2 restart (aanbevolen na eerste deploy)."""
+from __future__ import annotations
+
+import os
+import sys
+
+import paramiko
+
+HOST = os.environ.get("DEPLOY_HOST", "192.168.1.32")
+USER = os.environ.get("DEPLOY_USER", "root")
+PASSWORD = os.environ.get("DEPLOY_PASSWORD", "kerkpoort")
+REMOTE_DIR = os.environ.get("DEPLOY_DIR", "/var/www/aantekeningen")
+
+
+def run(ssh: paramiko.SSHClient, cmd: str, timeout: int = 600) -> None:
+    print(f"$ {cmd}")
+    _, stdout, stderr = ssh.exec_command(cmd, get_pty=True, timeout=timeout)
+    out = stdout.read().decode("utf-8", errors="replace")
+    err = stderr.read().decode("utf-8", errors="replace")
+    code = stdout.channel.recv_exit_status()
+    if out.strip():
+        print(out.rstrip())
+    if code != 0:
+        print(err.rstrip(), file=sys.stderr)
+        raise RuntimeError(f"failed ({code}): {cmd}")
+
+
+def main() -> None:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(HOST, username=USER, password=PASSWORD, timeout=30)
+    run(ssh, f"cd {REMOTE_DIR} && git pull")
+    run(ssh, f"cd {REMOTE_DIR} && npm ci")
+    run(ssh, f"cd {REMOTE_DIR} && npm run build")
+    run(ssh, "pm2 restart aantekeningen --update-env")
+    run(ssh, "sleep 2 && curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3008/")
+    ssh.close()
+    print("Pull deploy OK")
+
+
+if __name__ == "__main__":
+    main()
