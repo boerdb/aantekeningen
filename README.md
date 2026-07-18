@@ -29,7 +29,7 @@ Pas `DATABASE_URL` aan:
 
 ```env
 DATABASE_URL=mysql://aantekeningen:JOUW_WW@192.168.1.14:3306/aantekeningen
-OCR_PROVIDER=manual
+OCR_PROVIDER=tesseract
 ```
 
 ### 3. Install & run
@@ -63,7 +63,8 @@ Bestanden (foto/PDF/Word) staan in `data/uploads/` op de Next-server — niet in
 
 | Optie | Kosten |
 |-------|--------|
-| manual | Gratis |
+| tesseract | Gratis (lokale OCR) |
+| manual | Gratis (geen OCR) |
 | Mathpix | ~$0,002/foto + setup |
 | Google Vision | 1000/maand gratis, daarna ~$1,50/1000 |
 
