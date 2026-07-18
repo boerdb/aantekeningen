@@ -34,7 +34,7 @@ def main() -> None:
     run(ssh, f"cd {REMOTE_DIR} && npm ci")
     run(ssh, f"cd {REMOTE_DIR} && npm run build")
     run(ssh, "pm2 restart aantekeningen --update-env")
-    run(ssh, "sleep 2 && curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3008/")
+    run(ssh, "sleep 2 && curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3017/")
     ssh.close()
     print("Pull deploy OK")
 

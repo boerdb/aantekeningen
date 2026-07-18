@@ -1,4 +1,4 @@
-/** PM2 — Scheikunde Aantekeningen (poort 3008; 3000=dash, 3007=med). */
+/** PM2 — Scheikunde Aantekeningen (poort 3017). */
 module.exports = {
   apps: [
     {
@@ -8,7 +8,7 @@ module.exports = {
       args: "start",
       env: {
         NODE_ENV: "production",
-        PORT: 3008,
+        PORT: 3017,
         TZ: "Europe/Amsterdam",
       },
     },

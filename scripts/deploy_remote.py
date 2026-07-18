@@ -98,11 +98,11 @@ NODE_ENV=production
     run(ssh, "pm2 delete aantekeningen 2>/dev/null; true", check=False)
     run(ssh, f"cd {REMOTE_DIR} && pm2 start ecosystem.config.cjs && pm2 save")
     run(ssh, "sleep 2 && pm2 list", check=False)
-    run(ssh, "curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3008/", check=False)
-    run(ssh, "curl -s http://127.0.0.1:3008/api/notes | head -c 300", check=False)
+    run(ssh, "curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3017/", check=False)
+    run(ssh, "curl -s http://127.0.0.1:3017/api/notes | head -c 300", check=False)
 
     print("\n=== Deploy done ===")
-    print(f"App: http://{HOST}:3008  dir={REMOTE_DIR}")
+    print(f"App: http://{HOST}:3017  dir={REMOTE_DIR}")
     ssh.close()
 
 

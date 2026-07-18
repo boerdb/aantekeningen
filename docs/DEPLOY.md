@@ -4,16 +4,16 @@ Zelfde architectuur als MedTracker / dash-next-app.
 
 ## Architectuur
 
-- **Next.js** op server **NEXT** (`192.168.1.32`) → `/var/www/aantekeningen` → poort **3008**
+- **Next.js** op server **NEXT** (`192.168.1.32`) → `/var/www/aantekeningen` → poort **3017**
 - **MySQL** op server **DB-server** (`192.168.1.14`) → database `aantekeningen`
 - **PM2** procesnaam: `aantekeningen`
 - GitHub: `git@github.com:boerdb/aantekeningen.git` (branch `main`)
 
 ```
-Telefoon/LAN → http://192.168.1.32:3008 → Next.js → MySQL op 192.168.1.14
+Telefoon/LAN → http://192.168.1.32:3017 → Next.js → MySQL op 192.168.1.14
 ```
 
-Optioneel later: Cloudflare Tunnel → `http://127.0.0.1:3008`.
+Optioneel later: Cloudflare Tunnel → `http://127.0.0.1:3017`.
 
 ## 1. MySQL (op DB-server)
 
@@ -75,8 +75,8 @@ NODE_ENV=production
 
 ```bash
 pm2 list | grep aantekeningen
-curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3008/
-curl -s http://127.0.0.1:3008/api/notes
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3017/
+curl -s http://127.0.0.1:3017/api/notes
 ```
 
 Uploads (foto/PDF/Word) staan in `/var/www/aantekeningen/data/uploads/` — zorg dat die map schrijfbaar blijft.

@@ -46,7 +46,7 @@ Open `http://localhost:3000` (of het LAN-IP van de machine).
 
 Zie [docs/DEPLOY.md](docs/DEPLOY.md). Kort:
 
-- Server: `192.168.1.32` → `/var/www/aantekeningen` → poort **3008**
+- Server: `192.168.1.32` → `/var/www/aantekeningen` → poort **3017**
 - MySQL: `192.168.1.14` → database `aantekeningen`
 - GitHub: `git@github.com:boerdb/aantekeningen.git` (`main`)
 

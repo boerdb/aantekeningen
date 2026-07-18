@@ -32,10 +32,15 @@ def run(
     out = stdout.read().decode("utf-8", errors="replace")
     err = stderr.read().decode("utf-8", errors="replace")
     code = stdout.channel.recv_exit_status()
-    if out.strip():
-        print(out.rstrip())
+    text = out.rstrip()
+    if text:
+        try:
+            sys.stdout.buffer.write((text + "\n").encode("utf-8", errors="replace"))
+            sys.stdout.flush()
+        except Exception:
+            print(text.encode("ascii", errors="replace").decode("ascii"))
     if check and code != 0:
-        print(err.rstrip(), file=sys.stderr)
+        print(err.rstrip().encode("ascii", errors="replace").decode("ascii"), file=sys.stderr)
         raise RuntimeError(f"failed ({code}): {cmd}")
     return code, out, err
 
@@ -71,11 +76,11 @@ NODE_ENV=production
     run(ssh, "pm2 delete aantekeningen 2>/dev/null; true", check=False)
     run(ssh, f"cd {REMOTE_DIR} && pm2 start ecosystem.config.cjs && pm2 save")
     run(ssh, "sleep 3 && pm2 list", check=False)
-    run(ssh, "curl -s -o /dev/null -w 'HTTP %{http_code}\\n' http://127.0.0.1:3008/", check=False)
-    run(ssh, "curl -s http://127.0.0.1:3008/api/notes | head -c 400", check=False)
+    run(ssh, "curl -s -o /dev/null -w 'HTTP %{http_code}\\n' http://127.0.0.1:3017/", check=False)
+    run(ssh, "curl -s http://127.0.0.1:3017/api/notes | head -c 400", check=False)
 
     print("\n=== Git deploy done ===")
-    print(f"http://{HOST}:3008  ({REMOTE_DIR})")
+    print(f"http://{HOST}:3017  ({REMOTE_DIR})")
     ssh.close()
 
 
