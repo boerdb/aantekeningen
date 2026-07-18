@@ -49,7 +49,7 @@ export function FileOpenButtons({
           className={`${btn} ${size} bg-[var(--panel-2)] text-[var(--foreground)] border border-[var(--border)]`}
         >
           <FileDown className="w-4 h-4" />
-          Open Word
+          Bekijk Word
         </button>
       </div>
 
